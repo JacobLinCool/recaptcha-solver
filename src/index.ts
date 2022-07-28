@@ -18,8 +18,9 @@ const model = new vosk.Model(MODEL_DIR);
 /**
  * Resolve reCAPTCHA challenge in a page.
  * @param page a playwright Page.
+ * @param options options.
  */
-export async function resolve(page: Page): Promise<void> {
+export async function resolve(page: Page, { delay = 128 } = {}): Promise<void> {
     await page.waitForSelector("iframe[title='reCAPTCHA']");
 
     const iframe = await page.$("iframe[title='reCAPTCHA']");
@@ -75,7 +76,7 @@ export async function resolve(page: Page): Promise<void> {
         throw new Error("Could not find reCAPTCHA audio input");
     }
 
-    await input.type(await text, { delay: 128 });
+    await input.type(await text, { delay });
 
     const button = await popup_page.$("#recaptcha-verify-button");
     if (button === null) {
@@ -124,10 +125,11 @@ function reconize(dir: string): Promise<string> {
                 throw new Error("Audio file must be WAV with mono PCM.");
             }
 
-            const rec = new vosk.Recognizer({ model: model, sampleRate: sampleRate });
+            const rec = new vosk.Recognizer({ model, sampleRate });
             rec.setMaxAlternatives(10);
             rec.setWords(true);
             rec.setPartialWords(true);
+
             for await (const data of readable) {
                 const end_of_speech = rec.acceptWaveform(data);
                 if (end_of_speech) {
