@@ -85,7 +85,11 @@ export async function resolve(page: Page, { delay = 128, popped = false } = {}):
 
     await button.click();
 
-    await box_page?.waitForSelector(".recaptcha-checkbox-checked");
+    try {
+        await box_page?.waitForSelector(".recaptcha-checkbox-checked");
+    } catch {
+        0;
+    }
 }
 
 function create_dir(): string {
