@@ -1,7 +1,13 @@
 {
     "name": "recaptcha-resolver",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Resolve reCAPTCHA challenges by using speech recognition.",
+    "keywords": [
+        "reCAPTCHA",
+        "playwright"
+    ],
+    "author": "JacobLinCool <jacoblincool@gmail.com> (https://github.com/JacobLinCool)",
+    "license": "MIT",
     "main": "lib/index.js",
     "module": "lib/index.mjs",
     "types": "lib/index.d.ts",
@@ -14,9 +20,6 @@
         "lint": "eslint .",
         "postinstall": "node ./scripts/postinstall.js"
     },
-    "keywords": ["reCAPTCHA"],
-    "author": "JacobLinCool <jacoblincool@gmail.com> (https://github.com/JacobLinCool)",
-    "license": "MIT",
     "files": [
         "scripts",
         "lib"
@@ -43,5 +46,13 @@
         "vosk": "^0.3.39",
         "wav": "^1.0.2",
         "yauzl": "^2.10.0"
+    },
+    "homepage": "https://github.com/JacobLinCool/recaptcha-resolver#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JacobLinCool/recaptcha-resolver.git"
+    },
+    "bugs": {
+        "url": "https://github.com/JacobLinCool/recaptcha-resolver/issues"
     }
 }
