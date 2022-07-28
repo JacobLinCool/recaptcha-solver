@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { Readable } from "node:stream";
-import { Page, Response } from "playwright-core";
+import { Frame, Page, Response } from "playwright-core";
 import vosk from "vosk";
 import wav from "wav";
 
@@ -20,25 +20,25 @@ const model = new vosk.Model(MODEL_DIR);
  * @param page a playwright Page.
  * @param options options.
  */
-export async function resolve(page: Page, { delay = 128 } = {}): Promise<void> {
-    await page.waitForSelector("iframe[title='reCAPTCHA']");
+export async function resolve(page: Page, { delay = 128, popped = false } = {}): Promise<void> {
+    popped || (await page.waitForSelector("iframe[title='reCAPTCHA']"));
 
     const iframe = await page.$("iframe[title='reCAPTCHA']");
-    if (iframe === null) {
+    if (iframe === null && popped === false) {
         throw new Error("Could not find reCAPTCHA iframe");
     }
 
-    const box_page = await iframe.contentFrame();
-    if (box_page === null) {
+    const box_page = await iframe?.contentFrame();
+    if (box_page === null && popped === false) {
         throw new Error("Could not find reCAPTCHA iframe content");
     }
 
-    const label = await box_page.$("#recaptcha-anchor-label");
-    if (label === null) {
+    const label = await box_page?.$("#recaptcha-anchor-label");
+    if (label === null && popped === false) {
         throw new Error("Could not find reCAPTCHA label");
     }
 
-    await label.click();
+    popped || (await label?.click());
 
     const popup_iframe = await page.$(
         "iframe[src^='https://www.google.com/recaptcha/api2/bframe']",
@@ -85,7 +85,7 @@ export async function resolve(page: Page, { delay = 128 } = {}): Promise<void> {
 
     await button.click();
 
-    await box_page.waitForSelector(".recaptcha-checkbox-checked");
+    await box_page?.waitForSelector(".recaptcha-checkbox-checked");
 }
 
 function create_dir(): string {
