@@ -1,1 +1,1 @@
-export { resolve } from "./resolve.js";
+export { solve } from "./solve.js";

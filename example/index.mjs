@@ -1,5 +1,5 @@
 import { chromium } from "playwright-core";
-import { resolve } from "recaptcha-resolver";
+import { solve } from "recaptcha-solver";
 
 const EXAMPLE_PAGE = "https://www.google.com/recaptcha/api2/demo";
 
@@ -10,10 +10,10 @@ async function main() {
     const page = await browser.newPage();
     await page.goto(EXAMPLE_PAGE);
 
-    console.time("resolve reCAPTCHA");
-    await resolve(page);
+    console.time("solve reCAPTCHA");
+    await solve(page);
     console.log("solved!");
-    console.timeEnd("resolve reCAPTCHA");
+    console.timeEnd("solve reCAPTCHA");
 
     await page.click("#recaptcha-demo-submit");
 

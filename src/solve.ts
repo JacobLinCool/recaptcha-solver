@@ -21,11 +21,11 @@ vosk.setLogLevel(-1);
 const model = new vosk.Model(MODEL_DIR);
 
 /**
- * Resolve reCAPTCHA challenge in a page.
+ * Solve reCAPTCHA challenge in a page.
  * @param page a playwright Page.
  * @param options options.
  */
-export async function resolve(page: Page, { delay = 128 } = {}): Promise<boolean> {
+export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Promise<boolean> {
     try {
         await page.waitForSelector(BFRAME, { state: "attached" });
     } catch {
@@ -91,7 +91,7 @@ export async function resolve(page: Page, { delay = 128 } = {}): Promise<boolean
         return false;
     }
 
-    await bframe.waitForSelector("#recaptcha-audio-button", { timeout: 5000 });
+    await bframe.waitForSelector("#recaptcha-audio-button", { timeout: wait });
     const audio_button = await bframe.$("#recaptcha-audio-button");
     if (audio_button === null) {
         throw new Error("Could not find reCAPTCHA audio button");
@@ -109,7 +109,7 @@ export async function resolve(page: Page, { delay = 128 } = {}): Promise<boolean
 
     debug("reconized text:", await text);
 
-    await bframe.waitForSelector("#audio-response", { timeout: 5000 });
+    await bframe.waitForSelector("#audio-response", { timeout: wait });
     const input = await bframe.$("#audio-response");
     if (input === null) {
         throw new Error("Could not find reCAPTCHA audio input");
@@ -126,7 +126,7 @@ export async function resolve(page: Page, { delay = 128 } = {}): Promise<boolean
 
     try {
         const iframe = await page.$(MAIN_FRAME);
-        await iframe?.waitForSelector(".recaptcha-checkbox-checked", { timeout: 5000 });
+        await iframe?.waitForSelector(".recaptcha-checkbox-checked", { timeout: wait });
     } catch {
         0;
     }
