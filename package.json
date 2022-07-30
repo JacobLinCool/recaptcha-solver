@@ -1,6 +1,6 @@
 {
     "name": "recaptcha-solver",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Solve reCAPTCHA challenges by using offline speech recognition.",
     "keywords": [
         "reCAPTCHA",
