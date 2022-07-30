@@ -2564,18 +2564,6 @@ packages:
       jest-resolve: 27.5.1
     dev: true
 
-  /jest-pnp-solver/1.2.2_jest-resolve@27.5.1:
-    resolution: {integrity: sha512-olV41bKSMm8BdnuMsewT4jqlZ8+3TCARAXjZGT9jcoSnrfUnRCqnMoF9XEeoWjbzObpqF9dRhHQj0Xb9QdF6/w==}
-    engines: {node: '>=6'}
-    peerDependencies:
-      jest-resolve: '*'
-    peerDependenciesMeta:
-      jest-resolve:
-        optional: true
-    dependencies:
-      jest-resolve: 27.5.1
-    dev: true
-
   /jest-regex-util/27.5.1:
     resolution: {integrity: sha512-4bfKq2zie+x16okqDXjXn9ql2B0dScQu+vcwe4TvFVhkVyuWLqpZrZtXxLLWoXYgn0E87I6r6GRYHF7wFZBUvg==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
@@ -2601,7 +2589,6 @@ packages:
       graceful-fs: 4.2.10
       jest-haste-map: 27.5.1
       jest-pnp-resolver: 1.2.2_jest-resolve@27.5.1
-      jest-pnp-solver: 1.2.2_jest-resolve@27.5.1
       jest-util: 27.5.1
       jest-validate: 27.5.1
       resolve: 1.22.1
