@@ -106,7 +106,7 @@ export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Prom
     });
 
     await audio_button.click();
-    await bframe.waitForSelector("#audio-source", { timeout: wait });
+    await bframe.waitForSelector("#audio-source", { state: "attached", timeout: wait });
 
     debug("reconized text:", await text);
 
