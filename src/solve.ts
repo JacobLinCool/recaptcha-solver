@@ -219,5 +219,8 @@ async function get_text(res: Response) {
 
     fs.writeFileSync(path.resolve(temp_dir, SOURCE_FILE), await res.body());
     convert(temp_dir);
-    return await reconize(temp_dir);
+    const result = await reconize(temp_dir);
+
+    fs.rmSync(temp_dir, { recursive: true });
+    return result;
 }
