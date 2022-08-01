@@ -15,7 +15,7 @@ importers:
       jest: ^27.5.1
       playwright-core: ^1.24.2
       prettier: ^2.7.1
-      recaptcha-solver: workspace:0.2.0
+      recaptcha-solver: workspace:*
       ts-jest: ^27.1.5
       tsup: ^5.12.9
       typedoc: ^0.22.18
