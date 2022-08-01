@@ -8,9 +8,15 @@ Requirements:
 
 - `ffmpeg` installed
 
+## Install
+
 ```sh
 npm i recaptcha-solver
 ```
+
+It will automatically download a 40 MB acoustic model which will be used to solve the challenges.
+
+The model is from <https://alphacephei.com/vosk/models> (Apache 2.0).
 
 ## Example
 
@@ -47,6 +53,26 @@ async function main() {
 ❯ node example/index.mjs
 solved!
 solve reCAPTCHA: 4.285s
+```
+
+With `VERBOSE` environment variable:
+
+```sh
+❯ VERBOSE=1 node example/index.mjs
+[reCAPTCHA solver] bframe loaded: false
+[reCAPTCHA solver] invisible: false
+[reCAPTCHA solver] action required: true
+[reCAPTCHA solver] [Mutex] init locked
+[reCAPTCHA solver] [Mutex] ready waiting
+[reCAPTCHA solver] [Mutex] get sound unlocked
+[reCAPTCHA solver] [Mutex] ready locked
+[reCAPTCHA solver] reconized: for their start urine
+[reCAPTCHA solver] [Mutex] done waiting
+[reCAPTCHA solver] [Mutex] verified unlocked
+[reCAPTCHA solver] [Mutex] done locked
+[reCAPTCHA solver] passed: true
+solved!
+solve reCAPTCHA: 4.072s
 ```
 
 ### Demo
