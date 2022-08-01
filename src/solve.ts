@@ -165,6 +165,8 @@ function convert(dir: string): void {
     spawnSync(
         "ffmpeg",
         [
+            "-loglevel",
+            "error",
             "-i",
             SOURCE_FILE,
             "-acodec",
