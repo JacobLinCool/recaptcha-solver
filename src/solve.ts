@@ -7,15 +7,7 @@ import { Page, Response } from "playwright-core";
 import vosk from "vosk";
 import wav from "wav";
 import { debug } from "./debug.js";
-import {
-    MODEL_DIR,
-    SOURCE_FILE,
-    OUT_FILE,
-    SAMPLE_RATE,
-    MAIN_FRAME,
-    BFRAME,
-    CHALLENGE,
-} from "./constants.js";
+import { MODEL_DIR, SOURCE_FILE, OUT_FILE, MAIN_FRAME, BFRAME, CHALLENGE } from "./constants.js";
 import { Mutex } from "./utils.js";
 
 vosk.setLogLevel(-1);
@@ -26,7 +18,10 @@ const model = new vosk.Model(MODEL_DIR);
  * @param page a playwright Page.
  * @param options options.
  */
-export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Promise<boolean> {
+export async function solve(
+    page: Page,
+    { delay = 128, wait = 5000, ffmpeg = "ffmpeg" } = {},
+): Promise<boolean> {
     try {
         await page.waitForSelector(BFRAME, { state: "attached" });
     } catch {
@@ -107,7 +102,7 @@ export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Prom
     const listener = async (res: Response) => {
         if (res.headers()["content-type"] === "audio/mp3") {
             answer = new Promise((resolve) => {
-                get_text(res)
+                get_text(res, ffmpeg)
                     .then(resolve)
                     .catch(() => undefined);
             });
@@ -161,24 +156,22 @@ function create_dir(): string {
     return dir;
 }
 
-function convert(dir: string): void {
-    spawnSync(
-        "ffmpeg",
-        [
-            "-loglevel",
-            "error",
-            "-i",
-            SOURCE_FILE,
-            "-acodec",
-            "pcm_s16le",
-            "-ac",
-            "1",
-            "-ar",
-            String(SAMPLE_RATE),
-            OUT_FILE,
-        ],
-        { cwd: dir, stdio: process.env.VERBOSE ? "inherit" : "ignore" },
-    );
+function convert(dir: string, ffmpeg = "ffmpeg"): void {
+    const args = [
+        "-loglevel",
+        "error",
+        "-i",
+        SOURCE_FILE,
+        "-acodec",
+        "pcm_s16le",
+        "-ac",
+        "1",
+        "-ar",
+        "16000",
+        OUT_FILE,
+    ];
+
+    spawnSync(ffmpeg, args, { cwd: dir, stdio: process.env.VERBOSE ? "inherit" : "ignore" });
 }
 
 function reconize(dir: string): Promise<string> {
@@ -214,11 +207,11 @@ function reconize(dir: string): Promise<string> {
     });
 }
 
-async function get_text(res: Response) {
+async function get_text(res: Response, ffmpeg = "ffmpeg"): Promise<string> {
     const temp_dir = create_dir();
 
     fs.writeFileSync(path.resolve(temp_dir, SOURCE_FILE), await res.body());
-    convert(temp_dir);
+    convert(temp_dir, ffmpeg);
     const result = await reconize(temp_dir);
 
     fs.rmSync(temp_dir, { recursive: true });
