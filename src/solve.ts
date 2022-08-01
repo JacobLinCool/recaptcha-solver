@@ -16,6 +16,7 @@ import {
     BFRAME,
     CHALLENGE,
 } from "./constants.js";
+import { Mutex } from "./utils.js";
 
 vosk.setLogLevel(-1);
 const model = new vosk.Model(MODEL_DIR);
@@ -31,6 +32,8 @@ export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Prom
     } catch {
         throw new Error("No reCAPTCHA detected");
     }
+
+    let invisible = false;
 
     // bframe is the frame that contains the reCAPTCHA challenge.
     const b_iframe = await page.$(BFRAME);
@@ -60,7 +63,7 @@ export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Prom
             throw new Error("Could not find reCAPTCHA iframe content");
         }
 
-        const invisible = (await box_page.$("div.rc-anchor-invisible")) ? true : false;
+        invisible = (await box_page.$("div.rc-anchor-invisible")) ? true : false;
         debug("invisible:", invisible);
 
         // invisible reCAPTCHA does not has label on it.
@@ -97,40 +100,54 @@ export async function solve(page: Page, { delay = 128, wait = 5000 } = {}): Prom
         throw new Error("Could not find reCAPTCHA audio button");
     }
 
-    const text = new Promise<string>((resolve) => {
-        page.on("response", async (res) => {
-            get_text(res)
-                .then(resolve)
-                .catch(() => undefined);
-        });
-    });
+    const mutex = new Mutex();
+    await mutex.lock("init");
+    let passed = false;
+    let answer = Promise.resolve("");
+    const listener = async (res: Response) => {
+        if (res.headers()["content-type"] === "audio/mp3") {
+            answer = new Promise((resolve) => {
+                get_text(res)
+                    .then(resolve)
+                    .catch(() => undefined);
+            });
+            mutex.unlock("get sound");
+        } else if (res.url().startsWith("https://www.google.com/recaptcha/api2/userverify")) {
+            const raw = (await res.body()).toString().replace(")]}'\n", "");
+            const json = JSON.parse(raw);
+            passed = json[2] === 1;
+            mutex.unlock("verified");
+        }
+    };
+    page.on("response", listener);
 
     await audio_button.click();
-    await bframe.waitForSelector("#audio-source", { state: "attached", timeout: wait });
 
-    debug("reconized text:", await text);
+    while (passed === false) {
+        await mutex.lock("ready");
+        await bframe.waitForSelector("#audio-source", { state: "attached", timeout: wait });
+        await bframe.waitForSelector("#audio-response", { timeout: wait });
 
-    await bframe.waitForSelector("#audio-response", { timeout: wait });
-    const input = await bframe.$("#audio-response");
-    if (input === null) {
-        throw new Error("Could not find reCAPTCHA audio input");
+        debug("reconized:", await answer);
+
+        const input = await bframe.$("#audio-response");
+        if (input === null) {
+            throw new Error("Could not find reCAPTCHA audio input");
+        }
+
+        await input.type(await answer, { delay });
+
+        const button = await bframe.$("#recaptcha-verify-button");
+        if (button === null) {
+            throw new Error("Could not find reCAPTCHA verify button");
+        }
+
+        await button.click();
+        await mutex.lock("done");
+        debug("passed:", passed);
     }
 
-    await input.type(await text, { delay });
-
-    const button = await bframe.$("#recaptcha-verify-button");
-    if (button === null) {
-        throw new Error("Could not find reCAPTCHA verify button");
-    }
-
-    await button.click();
-
-    try {
-        const iframe = await page.$(MAIN_FRAME);
-        await iframe?.waitForSelector(".recaptcha-checkbox-checked", { timeout: wait });
-    } catch {
-        0;
-    }
+    page.off("response", listener);
 
     return true;
 }
@@ -198,13 +215,7 @@ function reconize(dir: string): Promise<string> {
 async function get_text(res: Response) {
     const temp_dir = create_dir();
 
-    const content_type = res.headers()["content-type"];
-
-    if (content_type === "audio/mp3") {
-        fs.writeFileSync(path.resolve(temp_dir, SOURCE_FILE), await res.body());
-        convert(temp_dir);
-        return await reconize(temp_dir);
-    }
-
-    throw new Error("Unexpected response");
+    fs.writeFileSync(path.resolve(temp_dir, SOURCE_FILE), await res.body());
+    convert(temp_dir);
+    return await reconize(temp_dir);
 }
