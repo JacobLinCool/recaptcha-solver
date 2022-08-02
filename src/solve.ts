@@ -176,9 +176,10 @@ function convert(dir: string, ffmpeg = "ffmpeg"): void {
 
 function reconize(dir: string): Promise<string> {
     return new Promise((resolve) => {
+        const stream = fs.createReadStream(path.resolve(dir, OUT_FILE), { highWaterMark: 4096 });
+
         const reader = new wav.Reader();
         const readable = new Readable().wrap(reader);
-
         reader.on("format", async ({ audioFormat, sampleRate, channels }) => {
             if (audioFormat != 1 || channels != 1) {
                 throw new Error("Audio file must be WAV with mono PCM.");
@@ -192,18 +193,17 @@ function reconize(dir: string): Promise<string> {
             for await (const data of readable) {
                 const end_of_speech = rec.acceptWaveform(data);
                 if (end_of_speech) {
-                    resolve(
-                        rec
-                            .result()
-                            .alternatives.sort((a: any, b: any) => b.confidence - a.confidence)[0]
-                            .text,
-                    );
+                    const result = (
+                        rec.result().alternatives as { confidence: number; text: string }[]
+                    ).sort((a, b) => b.confidence - a.confidence)[0].text;
+                    stream.close(() => resolve(result));
                 }
             }
 
             rec.free();
         });
-        fs.createReadStream(path.resolve(dir, OUT_FILE), { highWaterMark: 4096 }).pipe(reader);
+
+        stream.pipe(reader);
     });
 }
 
