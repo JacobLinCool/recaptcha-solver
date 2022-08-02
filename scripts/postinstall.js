@@ -13,6 +13,11 @@ const MODEL_DIR = path.resolve(__dirname, "..", "model");
         fs.mkdirSync(MODEL_DIR, { recursive: true });
     }
 
+    if (fs.existsSync(path.resolve(MODEL_DIR, "DONE"))) {
+        VERBOSE && console.log("Model already downloaded");
+        return;
+    }
+
     const zip = path.resolve(os.tmpdir(), "model.zip");
     await download(URL, zip);
     VERBOSE && console.log("Downloaded model to", zip);
@@ -53,6 +58,10 @@ const MODEL_DIR = path.resolve(__dirname, "..", "model");
             })
             .on("error", (err) => {
                 throw err;
+            })
+            .on("end", () => {
+                VERBOSE && console.log("Extracted all files");
+                fs.writeFileSync(path.resolve(MODEL_DIR, "DONE"), "");
             });
     });
 })();
