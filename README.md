@@ -8,6 +8,14 @@ Requirements:
 
 - `ffmpeg` installed
 
+Features:
+
+- Offline: A pretrained small model is included.
+- Fast: Solve each challenge in less than 3 seconds.
+- Accurate: Over 95% accuracy.
+- Auto-retry: If the challenge is not solved, it will retry it.
+- Supports reCAPTCHA v2 and v3 (invisible).
+
 ## Install
 
 ```sh
