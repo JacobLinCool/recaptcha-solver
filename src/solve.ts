@@ -8,10 +8,17 @@ import vosk from "vosk";
 import wav from "wav";
 import { debug } from "./debug.js";
 import { MODEL_DIR, SOURCE_FILE, OUT_FILE, MAIN_FRAME, BFRAME, CHALLENGE } from "./constants.js";
-import { Mutex } from "./utils.js";
+import { Mutex, sleep } from "./utils.js";
 
 vosk.setLogLevel(-1);
 const model = new vosk.Model(MODEL_DIR);
+
+export class NotFoundError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "NotFoundError";
+    }
+}
 
 /**
  * Solve reCAPTCHA challenge in a page.
@@ -20,7 +27,7 @@ const model = new vosk.Model(MODEL_DIR);
  */
 export async function solve(
     page: Page,
-    { delay = 128, wait = 5000, ffmpeg = "ffmpeg" } = {},
+    { delay = 64, wait = 5000, retry = 3, ffmpeg = "ffmpeg" } = {},
 ): Promise<boolean> {
     try {
         await page.waitForSelector(BFRAME, { state: "attached" });
@@ -101,6 +108,7 @@ export async function solve(
     let answer = Promise.resolve("");
     const listener = async (res: Response) => {
         if (res.headers()["content-type"] === "audio/mp3") {
+            debug(`got audio from ${res.url()}`);
             answer = new Promise((resolve) => {
                 get_text(res, ffmpeg)
                     .then(resolve)
@@ -110,7 +118,7 @@ export async function solve(
         } else if (res.url().startsWith("https://www.google.com/recaptcha/api2/userverify")) {
             const raw = (await res.body()).toString().replace(")]}'\n", "");
             const json = JSON.parse(raw);
-            passed = json[2] === 1;
+            passed = json[2] === 1; // [failed, passed] = [0, 1]
             mutex.unlock("verified");
         }
     };
@@ -118,8 +126,18 @@ export async function solve(
 
     await audio_button.click();
 
+    let tried = 0;
     while (passed === false) {
-        await mutex.lock("ready");
+        if (tried++ >= retry) {
+            throw new Error("Could not solve reCAPTCHA");
+        }
+
+        await Promise.race([
+            mutex.lock("ready"),
+            sleep(wait).then(() => {
+                throw new NotFoundError("No Audio Found");
+            }),
+        ]);
         await bframe.waitForSelector("#audio-source", { state: "attached", timeout: wait });
         await bframe.waitForSelector("#audio-response", { timeout: wait });
 
@@ -148,7 +166,7 @@ export async function solve(
 }
 
 function create_dir(): string {
-    const dir = path.resolve(os.tmpdir(), "rr-" + Math.random().toString().slice(2));
+    const dir = path.resolve(os.tmpdir(), "reSOLVER-" + Math.random().toString().slice(2));
     if (fs.existsSync(dir)) {
         fs.rmSync(dir, { recursive: true });
     }

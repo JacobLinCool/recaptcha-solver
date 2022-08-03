@@ -1,1 +1,1 @@
-export { solve } from "./solve.js";
+export { solve, NotFoundError } from "./solve.js";
