@@ -4,7 +4,7 @@ import path from "node:path";
 import os from "node:os";
 import { Readable } from "node:stream";
 import { Page, Response } from "playwright-core";
-import vosk from "vosk";
+import vosk from "vosk-lib";
 import wav from "wav";
 import { debug } from "./debug.js";
 import { MODEL_DIR, SOURCE_FILE, OUT_FILE, MAIN_FRAME, BFRAME, CHALLENGE } from "./constants.js";
@@ -211,9 +211,9 @@ function reconize(dir: string): Promise<string> {
             for await (const data of readable) {
                 const end_of_speech = rec.acceptWaveform(data);
                 if (end_of_speech) {
-                    const result = (
-                        rec.result().alternatives as { confidence: number; text: string }[]
-                    ).sort((a, b) => b.confidence - a.confidence)[0].text;
+                    const result = rec
+                        .result()
+                        .alternatives.sort((a, b) => b.confidence - a.confidence)[0].text;
                     stream.close(() => resolve(result));
                 }
             }

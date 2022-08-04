@@ -18,52 +18,11 @@ const MODEL_DIR = path.resolve(__dirname, "..", "model");
         return;
     }
 
-    const zip = path.resolve(os.tmpdir(), "model.zip");
+    const zip = path.resolve(os.tmpdir(), path.basename(URL));
     await download(URL, zip);
     VERBOSE && console.log("Downloaded model to", zip);
 
-    yauzl.open(zip, { lazyEntries: true }, (err, zipfile) => {
-        if (err) throw err;
-        zipfile.readEntry();
-        zipfile
-            .on("entry", (entry) => {
-                if (/\/$/.test(entry.fileName)) {
-                    zipfile.readEntry();
-                } else {
-                    zipfile.openReadStream(entry, (err, stream) => {
-                        if (err) {
-                            throw err;
-                        }
-
-                        const dest = path.resolve(
-                            MODEL_DIR,
-                            entry.fileName.replace("vosk-model-small-en-us-0.15/", ""),
-                        );
-                        if (!fs.existsSync(path.dirname(dest))) {
-                            fs.mkdirSync(path.dirname(dest), { recursive: true });
-                            VERBOSE && console.log("Created directory", path.dirname(dest));
-                        }
-
-                        stream.pipe(fs.createWriteStream(dest));
-                        stream
-                            .on("end", () => {
-                                VERBOSE && console.log("Extracted", dest);
-                                zipfile.readEntry();
-                            })
-                            .on("error", (err) => {
-                                throw err;
-                            });
-                    });
-                }
-            })
-            .on("error", (err) => {
-                throw err;
-            })
-            .on("end", () => {
-                VERBOSE && console.log("Extracted all files");
-                fs.writeFileSync(path.resolve(MODEL_DIR, "DONE"), "");
-            });
-    });
+    await unzip(zip, MODEL_DIR);
 })();
 
 /**
@@ -112,5 +71,53 @@ function download(url, to, redirect = 0) {
         });
 
         request.end();
+    });
+}
+
+function unzip(zip, dest) {
+    const dir = path.basename(zip, ".zip");
+    return new Promise((resolve, reject) => {
+        yauzl.open(zip, { lazyEntries: true }, (err, zipfile) => {
+            if (err) {
+                reject(err);
+            }
+            zipfile.readEntry();
+            zipfile
+                .on("entry", (entry) => {
+                    if (/\/$/.test(entry.fileName)) {
+                        zipfile.readEntry();
+                    } else {
+                        zipfile.openReadStream(entry, (err, stream) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            const f = path.resolve(dest, entry.fileName.replace(`${dir}/`, ""));
+                            if (!fs.existsSync(path.dirname(f))) {
+                                fs.mkdirSync(path.dirname(f), { recursive: true });
+                                VERBOSE && console.log("Created directory", path.dirname(f));
+                            }
+                            stream.pipe(fs.createWriteStream(f));
+                            stream
+                                .on("end", () => {
+                                    VERBOSE && console.log("Extracted", f);
+                                    zipfile.readEntry();
+                                })
+                                .on("error", (err) => {
+                                    reject(err);
+                                });
+                        });
+                    }
+                })
+                .on("error", (err) => {
+                    reject(err);
+                })
+                .on("end", () => {
+                    VERBOSE && console.log("Extracted all files");
+                    fs.writeFileSync(path.resolve(dest, "DONE"), "");
+                })
+                .on("close", () => {
+                    resolve();
+                });
+        });
     });
 }
