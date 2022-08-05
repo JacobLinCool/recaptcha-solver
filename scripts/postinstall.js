@@ -23,6 +23,7 @@ const MODEL_DIR = path.resolve(__dirname, "..", "model");
     VERBOSE && console.log("Downloaded model to", zip);
 
     await unzip(zip, MODEL_DIR);
+    fs.unlinkSync(zip);
 })();
 
 /**
