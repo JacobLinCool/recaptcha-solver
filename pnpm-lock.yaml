@@ -20,12 +20,12 @@ importers:
       tsup: ^5.12.9
       typedoc: ^0.22.18
       typescript: ^4.7.4
-      vosk-lib: ^0.1.1
+      vosk-lib: ^0.1.2
       wav: ^1.0.2
       yauzl: ^2.10.0
     dependencies:
       playwright-core: 1.24.2
-      vosk-lib: 0.1.1
+      vosk-lib: 0.1.2
       wav: 1.0.2
       yauzl: 2.10.0
     devDependencies:
@@ -3817,8 +3817,8 @@ packages:
       source-map: 0.7.4
     dev: true
 
-  /vosk-lib/0.1.1:
-    resolution: {integrity: sha512-g+BzTOv/F9YJ2NmwNc0xbPq5EoS19Q54/+UyVIORbrExcmL2bKTOUqkJ1hthWLhgcuehTotZOK23T41/ppmvpg==}
+  /vosk-lib/0.1.2:
+    resolution: {integrity: sha512-pU619UqluMt0BK1F9qOjC1rdiMVQGki4OuwjyeQ+vG7aTNxbhU393W25kN78Dz83I2K2kpwHSbhmK/P8ZvpyUQ==}
     requiresBuild: true
     dependencies:
       ffi-napi: 4.0.3
