@@ -11,6 +11,7 @@
     "main": "lib/index.js",
     "module": "lib/index.mjs",
     "types": "lib/index.d.ts",
+    "bin": "scripts/postinstall.js",
     "scripts": {
         "test": "jest --coverage",
         "dev": "tsup --watch",
