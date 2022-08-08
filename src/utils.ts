@@ -1,3 +1,5 @@
+import { Page } from "playwright-core";
+import { BFRAME } from "./constants";
 import { debug } from "./debug";
 
 export class Mutex {
@@ -46,4 +48,13 @@ export class Mutex {
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check if bframe is attached to the page.
+ * @param page The page to check.
+ * @returns true if bframe is attached to the page.
+ */
+export async function exists(page: Page): Promise<boolean> {
+    return !!page.$(BFRAME);
 }
