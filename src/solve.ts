@@ -115,7 +115,10 @@ export async function solve(
                     .catch(() => undefined);
             });
             mutex.unlock("get sound");
-        } else if (res.url().startsWith("https://www.google.com/recaptcha/api2/userverify")) {
+        } else if (
+            res.url().startsWith("https://www.google.com/recaptcha/api2/userverify") ||
+            res.url().startsWith("https://www.google.com/recaptcha/enterprise/userverify")
+        ) {
             const raw = (await res.body()).toString().replace(")]}'\n", "");
             const json = JSON.parse(raw);
             passed = json[2] === 1; // [failed, passed] = [0, 1]
