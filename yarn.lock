@@ -3640,10 +3640,10 @@ v8-to-istanbul@^8.1.0:
     convert-source-map "^1.6.0"
     source-map "^0.7.3"
 
-vosk-koffi@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/vosk-koffi/-/vosk-koffi-1.0.3.tgz#7550725fe66d00b23672406db663483c56213169"
-  integrity sha512-5DEOAHFD55a4ugMkiKlwSIEhP2FzM9g2q+4rT7mNzNUUzJrwfELGppt64puYEhCqFXwAZQPMvpi84glfncRaUQ==
+vosk-koffi@latest:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/vosk-koffi/-/vosk-koffi-1.0.4.tgz#df3cfca43728a249dae8e108018bd23f223b1969"
+  integrity sha512-YIB9kXyDaubwVFKKEh9+xAm9QGAlZZ/ogTCPH1aOB9kqCYjB4x5Iu8SxAQ/YW+MKwjsP+rchNHm6B6AKByxjQw==
   dependencies:
     koffi "^2.8.6"
 
