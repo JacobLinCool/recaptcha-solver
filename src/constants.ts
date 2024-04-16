@@ -6,5 +6,5 @@ export const OUT_FILE = "out.wav";
 
 export const MAIN_FRAME = "iframe[title='reCAPTCHA']";
 export const BFRAME =
-    "iframe[src^='https://www.google.com/recaptcha/api2/bframe'], iframe[src^='https://www.google.com/recaptcha/enterprise/bframe']";
+    "iframe[src^='https://www.google.com/recaptcha/api2/bframe']:visible, iframe[src^='https://www.google.com/recaptcha/enterprise/bframe']:visible";
 export const CHALLENGE = "body > div > div";
