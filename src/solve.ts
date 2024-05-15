@@ -213,7 +213,7 @@ function reconize(dir: string): Promise<string> {
                 if (end_of_speech) {
                     const result = rec
                         .result()
-                        .alternatives.sort((a:any, b:any) => b.confidence - a.confidence)[0].text;
+                        .alternatives.sort((a, b) => b.confidence - a.confidence)[0].text;
                     stream.close(() => resolve(result));
                 }
             }
